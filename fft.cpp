@@ -13,9 +13,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define _USE_MATH_DEFINES
 #include<iostream>
 #include<complex>
 #include<stdlib.h>
+#include<cmath>
 
 using namespace std;
 
@@ -29,7 +31,7 @@ int pow2(int n){
     int pow = 2;
     while( n!=1 ) {
         n = n/2;
-        pow *=2;
+        pow *= 2;
     }
     return pow;
 }
@@ -42,8 +44,6 @@ void filter(int flag, int bound, dcomp* input, dcomp* output){
     }
 }
 
-/*
-*/
 // Evaluate the polynomial at n points
 dcomp* evaluate(dcomp* A, int n){
     // Create an array to store the returned values
@@ -56,23 +56,27 @@ dcomp* evaluate(dcomp* A, int n){
 
         // Create an array to store the point value representation
         dcomp* A_even = values;
-        dcomp* A_odd = values + (half_n - 1);
-
-        // define omega
-        dcomp w = polar(1.0, 2.0*M_PI/n);
+        dcomp* A_odd = values + half_n;
 
         // Filter the values in A into A_even and A_odd
         filter(0, n, A, A_even);
-        filter(0, n, A, A_odd);
+        filter(1, n, A, A_odd);
 
         // Recursively compute the values at n/2 points
         dcomp *V_even = evaluate(A_even, half_n);
         dcomp *V_odd = evaluate(A_odd, half_n);
 
+        // define omega
+        dcomp w = polar(1.0, 2.0*M_PI/n);
+        cout << n << ":::::::::" << arg(w) << "\n";
+        dcomp temp;
+
         // Now compute the values at n points
-        for( int j = 0; j <half_n ; ++j) {
-            values[j] = V_even[j] + w * V_odd[j];
-            values[j + half_n] = V_even[j] - w * V_odd[j];
+        for( int j = 0; j < half_n ; ++j) {
+            temp = w * V_odd[j];
+            values[j] = V_even[j] + temp;
+            values[j + half_n] = V_even[j] - temp;
+            w *= w;
         }
 
         // delete the values obtained
@@ -89,9 +93,10 @@ int main() {
     cin >> n;
 
     // allocate memory for the two polynomials with the given degree
-    int degree = pow2(n);
-    dcomp* A = (dcomp*)malloc(degree*sizeof(dcomp));
-    dcomp* B = (dcomp*)malloc(degree*sizeof(dcomp));
+    int points = pow2(2*n);
+    dcomp* A = (dcomp*)malloc(points*sizeof(dcomp));
+    dcomp* B = (dcomp*)malloc(points*sizeof(dcomp));
+    dcomp* C_eval = (dcomp*)malloc(points*sizeof(dcomp));
 
     // read the values
     int i,j;
@@ -103,16 +108,29 @@ int main() {
         cin >> B[j];
     }
 
-    for (; j <degree; ++j) {
+    // Extend the two input arrays to points number of points
+    for (; j < points; ++j) {
         A[j] = 0;
         B[j] = 0;
     }
 
-    dcomp *values = evaluate(A, degree);
+    dcomp *A_eval = evaluate(A, points);
+    dcomp *B_eval = evaluate(B, points);
 
-    for (j = 0; j <degree; ++j) {
-        cout << values[j];
+    // Compute the values of C on these points
+    for(i = 0; i < points; i++ ) {
+        C_eval[i] = A_eval[i] * B_eval[i];
     }
 
+    dcomp* C = (dcomp*)malloc(points*sizeof(dcomp));
+    C = evaluate(C_eval, points);
+
+    for(i = 0 ; i < points; i++ ){
+        C_eval[i] = C[points-i]/dcomp(points, 0);
+    }
+
+    for(i=0;i<points;i++){
+        cout << C_eval[i] << "\n";
+    }
 }
 
