@@ -73,7 +73,7 @@ dcomp* evaluate(dcomp* A, int n, dcomp w){
 		dcomp *V_odd = evaluate(A_odd, half_n, w*w);
 
 		// Now compute the values at n points
-		dcomp x=dcomp(1,0);
+		dcomp x = 1;
 		for( int j = 0; j <half_n ; ++j) {
 			values[j] = V_even[j] + x * V_odd[j];
 			values[j + half_n] = V_even[j] - x * V_odd[j];
@@ -134,6 +134,10 @@ int main() {
 			C_eval[i] = A_eval[i] * B_eval[i];
 		}
 
+        // They are of no use hereafter
+        free(A_eval);
+        free(B_eval);
+
 		C = evaluate(C_eval, points, dcomp(1.0,0)/w);
 
         // Compute the limits
@@ -144,9 +148,6 @@ int main() {
 		cout << "\n";
 
 		free(C);
-        free(A_eval);
-        free(B_eval);
-
 	}
 	return 0;
 }

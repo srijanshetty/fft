@@ -25,12 +25,9 @@ int main() {
     int A[2000], B[2000], C[2000];
 
     // read the values
-    int i,j,k;
+    int i, j, k, n, points, temp;
     for( i = 0; i < test_cases; ++i) {
-        int n;
         cin >> n;
-
-        int points = 2*n;
 
         for (j = 0; j <= n; ++j ) {
             cin >> A[j];
@@ -40,12 +37,13 @@ int main() {
             cin >> B[j];
         }
 
+        points = 2*n;
         for (; j <= points; ++j ) {
             A[j] = 0;
             B[j] = 0;
         }
 
-        int temp;
+        temp;
         for(j = 0; j <= points; ++j ) {
             temp = 0;
             for (k = 0; k <=j; ++k ) {
@@ -58,4 +56,3 @@ int main() {
     }
     return 0;
 }
-
