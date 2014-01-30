@@ -24,6 +24,9 @@ using namespace std;
 
 typedef complex<double> dcomp;
 
+// Global variables
+dcomp filter_temp[2000];
+
 int pow2(int n){
 	if (n == 0) {
 		return 1;
@@ -38,17 +41,23 @@ int pow2(int n){
 }
 
 // This filters an array into either the even or the odd values depending on the value of the flag
-void filter(int bound, dcomp* input, dcomp* output_even, dcomp* output_odd){
+void filter(int bound, dcomp* input){
 	int i,k,j;
-	for(i = 0, k = 0, j=0; i < bound; ++i) {
+    int half_bound = bound/2;
+
+	for(i = 0, k = 0, j = 0; i < bound; ++i) {
 		if(i%2==0) {
-			output_even[k] = input[i];
+            filter_temp[k] = input[i];
 			++k;
 		} else {
-			output_odd[j] = input[i];
-			++j;
-		}
+            filter_temp[half_bound + j] = input[i];
+            ++j;
+        }
 	}
+
+    for(i=0; i<bound; ++i) {
+        input[i] = filter_temp[i];
+    }
 }
 
 // Evaluate the polynomial at n points
@@ -61,16 +70,12 @@ dcomp* evaluate(dcomp* A, int n, dcomp w){
 	} else {
 		int half_n = n/2;
 
-		// Create an array to store the point value representation
-		dcomp* A_even = values;
-		dcomp* A_odd = values + half_n ;
-
 		// Filter the values in A into A_even and A_odd
-		filter(n, A, A_even, A_odd);
+		filter(n, A);
 
 		// Recursively compute the values at n/2 points
-		dcomp *V_even = evaluate(A_even, half_n, w*w);
-		dcomp *V_odd = evaluate(A_odd, half_n, w*w);
+		dcomp *V_even = evaluate(A, half_n, w*w);
+		dcomp *V_odd = evaluate((A + half_n), half_n, w*w);
 
 		// Now compute the values at n points
 		dcomp x = 1;
