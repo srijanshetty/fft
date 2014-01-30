@@ -92,19 +92,23 @@ dcomp* evaluate(dcomp* A, int n, dcomp w){
 int main() {
 	int test_cases;
 	cin >> test_cases;
-	int k;
+
+    // define the variables which will be required for computation
+    dcomp A[2000];
+    dcomp B[2000];
+    dcomp C_eval[2000];
+    dcomp *C, *A_eval, *B_eval;
+    dcomp w;
+	int i, j, k, n, lim, points;
+
+    // Loop through all the test cases
 	for(k = 0; k < test_cases; ++k) {
-		int n;
 		cin >> n;
 
 		// allocate memory for the two polynomials with the given degree
-		int points = pow2(2*n);
-		dcomp* A = (dcomp*)malloc(points*sizeof(dcomp));
-		dcomp* B = (dcomp*)malloc(points*sizeof(dcomp));
-		dcomp* C_eval = (dcomp*)malloc(points*sizeof(dcomp));
+		points = pow2(2*n);
 
 		// read the values
-		int i,j;
 		for (j = 0; j <= n; ++j ) {
 			cin >> A[j];
 		}
@@ -118,31 +122,30 @@ int main() {
 			A[j] = 0;
 			B[j] = 0;
 		}
+
 		// define omega
-		dcomp w1 = polar(1.0, 2.0*M_PI/points);
-		dcomp w = dcomp(w1.real(), w1.imag());
-		dcomp *A_eval = evaluate(A, points,w);
-		dcomp *B_eval = evaluate(B, points,w);
+		w = polar(1.0, 2.0*M_PI/points);
+		w = dcomp(w.real(), w.imag());
+		A_eval = evaluate(A, points, w);
+		B_eval = evaluate(B, points, w);
 
 		// Compute the values of C on these points
 		for(i = 0; i < points; i++ ) {
 			C_eval[i] = A_eval[i] * B_eval[i];
 		}
 
-		dcomp* C = (dcomp*)malloc(points*sizeof(dcomp));
-		C = evaluate(C_eval, points,dcomp(1.0,0)/w);
+		C = evaluate(C_eval, points, dcomp(1.0,0)/w);
 
-		int lim = n * n;
-		if ( n == 1 ) lim = 2;
-		for(i=0;i<=lim;i++){
+        // Compute the limits
+		lim = 2 * n;
+		for(i=0; i <= lim; i++){
 			printf("%.0f ", C[i].real()/points);
 		}
 		cout << "\n";
 
 		free(C);
-		free(C_eval);
-		free(A);
-		free(B);
+        free(A_eval);
+        free(B_eval);
 
 	}
 	return 0;
