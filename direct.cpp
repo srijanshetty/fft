@@ -19,40 +19,40 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 
 int main() {
-    int test_cases;
-    cin >> test_cases;
-
-    int A[2000], B[2000], C[2000];
+    int i, j, k, degree, result_degree, test_cases;
+    long A[2000], B[2000], C[2000];
 
     // read the values
-    int i, j, k, n, points, temp;
+    cin >> test_cases;
     for( i = 0; i < test_cases; ++i) {
-        cin >> n;
+        cin >> degree;
+        result_degree = 2 * degree;
 
-        for (j = 0; j <= n; ++j ) {
+        for (j = 0; j <= degree; ++j ) {
             cin >> A[j];
         }
 
-        for (j = 0; j <= n; ++j ) {
+        for (j = 0; j <= degree; ++j ) {
             cin >> B[j];
         }
 
-        points = 2*n;
-        for (; j <= points; ++j ) {
+        for (j = (degree + 1); j <= result_degree; ++j ) {
             A[j] = 0;
             B[j] = 0;
         }
 
-        temp;
-        for(j = 0; j <= points; ++j ) {
-            temp = 0;
-            for (k = 0; k <=j; ++k ) {
-                temp += A[k] * B[j-k];
+        for( j = 0; j <= result_degree; ++j ) {
+            C[j] = 0;
+
+            for ( k = 0; k <= j; ++k ) {
+                C[j] += A[k] * B[j - k];
             }
-            C[j] = temp;
+        }
+
+        for( j = 0; j <= max_degree; ++j ) {
             cout<< C[j] << " ";
         }
-        cout<< "\n";
+        cout << endl;
     }
     return 0;
 }
