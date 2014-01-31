@@ -28,96 +28,128 @@ typedef complex<double> dcomp;
 typedef deque<dcomp> comp_queue;
 
 // To computer the nearest power of 2
-long power_2(long n){
-	if (n == 0) {
+long power_2( long n ){
+	if ( n == 0 ) {
 		return 1;
 	}
 
 	long pow = 2;
-	while( n!=1 ) {
+	while( n != 1 ) {
 		n /= 2;
-		pow *=2;
+		pow *= 2;
 	}
 	return pow;
 }
 
 // This filters an array into either the even or the odd values depending on the value of the flag
-void filter(comp_queue &input, comp_queue &even, comp_queue &odd){
+void filter( comp_queue &input, comp_queue &even, comp_queue &odd ){
     int i = 0;
     comp_queue::iterator iter;
 
     // Filter the input to create two arrays storing the even and the
     // odd coefficients
-    for(iter = input.begin(); iter != input.end(); ++iter, ++i ) {
+    for( iter = input.begin(); iter != input.end(); ++iter, ++i ) {
         if( i % 2 == 0 ) {
             even.push_back( *iter );
         } else {
             odd.push_back( *iter );
         }
     }
+
+    // Clear out the input
+    input.clear();
 }
 
-/*
 // Evaluate the polynomial at n points
-comp_queue evaluate(comp_queue &poly, comp_queue &result){
-    int size = input.size();
+comp_queue evaluate( comp_queue &poly, dcomp root ) {
+    int size = poly.size();
+    comp_queue result(size);
 
+    /*
     // In the base case the value is the value of the constant term
     if( size == 1 ) {
-        result.push_back(poly.back());
+        result.push_back( poly.back() );
     } else {
+        comp_queue even, odd, even_eval, odd_eval;
+
         // First we filter A into it's even and odd componenets
-        dcomp even, odd;
-        filter(poly, even, odd);
-        poly.clear(); // we won't be needing the polynomial anymore
+        // Then evaluate recursively the even part and the odd part
+        filter( poly, even, odd );
+        even_eval = evaluate( even, root * root );
+        odd_eval = evaluate( odd, root * root );
 
-        // Evaluate recursively the even part and the odd part
-        evaluate(even, even_eval, root * root);
-        evaluate(odd, odd_eval, root * root);
-
-        // clear out the residual information
-        even.clear();
-        odd.clear();
-        
 		// Now compute the values at n points
 		dcomp temp = 1;
-		for( int j = 0; j <half_n ; ++j) {
+        int j, half_size;
+		for( j = 0; j < half_size ; ++j ) {
 			result[j] = even_eval[j] + temp * odd_eval[j];
-			result[j + half_n] = odd_eval[j] - temp * odd_eval[j];
-			temp = temp * w;
+			result[j + half_size] = odd_eval[j] - temp * odd_eval[j];
+			temp = temp * root;
 		}
+
+        // clear out the residual stuff
+        even_eval.clear();
+        odd_eval.clear();
     }
+    */
+
+    // return the result to the calling function
+    return result;
 }
-*/
 
 int main() {
-    comp_queue first, second, result;
-    comp_queue even, odd;
-    first.push_back(0);
-    first.push_back(1);
-    first.push_back(2);
-    first.push_back(3);
-    first.push_back(4);
-    first.push_back(5);
+	int test_cases, k, degree, result_degree, upper_bound, i, j;
+    comp_queue first, second, result, first_eval, second_eval, result_eval;
+    dcomp temp, w;
 
-    filter(first, even, odd);
-    first.clear();
-    comp_queue::iterator iter;
-    for(iter = even.begin(); iter != even.end(); ++iter ) {
-        cout << *iter << " ";
-    }
-    cout << endl;
+    // Loop through all the test cases
+	cin >> test_cases;
+	for(k = 0; k < test_cases; ++k) {
+		cin >> degree;
 
-    for(iter = odd.begin(); iter != odd.end(); ++iter ) {
-        cout << *iter << " ";
-    }
-    cout << endl;
+		// allocate memory for the two polynomials with the given degree
+		upper_bound = power_2( 2 * degree );
 
-    for(iter = first.begin(); iter != first.end(); ++iter ) {
-        cout << *iter << " ";
-    }
-    cout << endl;
+		// read the values
+		for ( j = 0; j <= degree; ++j ) {
+            cin >> temp;
+            first.push_back( temp );
+		}
+
+		for ( j = 0; j <= degree; ++j ) {
+            cin >> temp;
+            second.push_back( temp );
+		}
+        
+		// Extend the two input arrays to points number of points
+		for ( ; j <= upper_bound; ++j ) {
+            first.push_back( 0 );
+            second.push_back( 0 );
+		}
+
+		// define omega
+		w = polar( 1.0, 2.0*M_PI/upper_bound);
+		w = dcomp( w.real(), w.imag() );
+        /*
+		first_eval = evaluate( first, w );
+		second_eval = evaluate( second, w );
+
+		// Compute the values of C on these points
+		for( i = 0; i <= upper_bound; i++ ) {
+			result_eval[i] = first_eval[i] * second_eval[i];
+		}
+
+		result = evaluate( result_eval, dcomp(1.0,0) / w );
+
+        // Compute the limits
+		result_degree = 2 * degree;
+		for(i=0; i <= result_degree; i++){
+			printf("%.0f ", result[i].real()/upper_bound);
+		}
+		cout << endl;
+        */
+        evaluate(first, w);
+	}
 
     return 0;
 }
-

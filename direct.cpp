@@ -19,8 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 
 int main() {
-    int i, j, k, degree, result_degree, test_cases;
-    long A[2000], B[2000], C[2000];
+    long int i, j, k, degree, result_degree, test_cases, temp;
+    long int A[2000], B[2000], C[2000];
 
     // read the values
     cin >> test_cases;
@@ -36,20 +36,23 @@ int main() {
             cin >> B[j];
         }
 
-        for (j = (degree + 1); j <= result_degree; ++j ) {
-            A[j] = 0;
-            B[j] = 0;
+        for( j = 0; j <= result_degree; ++j ) {
+            temp = 0;
+
+            if( j <= degree ) {
+                for ( k = 0; k <= j; ++k ) {
+                    temp += A[k] * B[j - k];
+                }
+            } else {
+                for( k = ( j - degree ); k <= degree; ++k ) {
+                    temp += A[k] * B[degree - ( k - ( j - degree ) )];
+                }
+            }
+
+            C[j] = temp;
         }
 
         for( j = 0; j <= result_degree; ++j ) {
-            C[j] = 0;
-
-            for ( k = 0; k <= j; ++k ) {
-                C[j] += A[k] * B[j - k];
-            }
-        }
-
-        for( j = 0; j <= max_degree; ++j ) {
             cout<< C[j] << " ";
         }
         cout << endl;
