@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include<iostream>
 #include<stdlib.h>
 #include<time.h>
-#define SIZE 10000
+#define SIZE 10000000
 
 using namespace std;
 
