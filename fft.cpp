@@ -18,35 +18,39 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<cmath>
-#define _USE_MATH_DEFINES
+#include<time.h>
+#define SIZE 10000000
 
 using namespace std;
 
-typedef complex<float> dcomp;
+#define PI 4 * atan(1)
+
+// For ease of use, rename the complex template
+typedef complex<double> dcomp;
 
 // Global variables
-dcomp filter_temp[2000];
+dcomp* filter_temp = new dcomp[SIZE];
 
-int pow2( int n ){
+long int pow2( long int n ){
 	if ( n == 0 ) {
 		return 1;
 	}
 
-	int pow = 2;
+	long int pow = 2;
 	while( n != 1 ) {
-		n = n / 2;
+		n /= 2;
 		pow *= 2;
 	}
 	return pow;
 }
 
 // This filters an array into either the even or the odd values depending on the value of the flag
-void filter( int bound, dcomp* input ){
-	int i, k, j;
-    int half_bound = bound / 2;
+void filter( long int bound, dcomp* input ){
+	long int i, k, j;
+    long int half_bound = bound / 2;
 
 	for( i = 0, k = 0, j = 0; i < bound; ++i ) {
-		if( i%2 == 0 ) {
+		if( i % 2 == 0 ) {
             filter_temp[k] = input[i];
 			++k;
 		} else {
@@ -61,97 +65,93 @@ void filter( int bound, dcomp* input ){
 }
 
 // Evaluate the polynomial at n points
-dcomp* evaluate( dcomp* A, int n, dcomp w ){
-	// Create an array to store the returned values
-	dcomp* values = ( dcomp* )malloc( n * sizeof( dcomp ) );
-
-	if( n == 1 ) {
-		values[0] = A[0];
+dcomp* evaluate( dcomp* coeff_poly, long int n, dcomp w , dcomp* eval_poly ){
+	if( n <= 1 ) {
+		eval_poly[0] = coeff_poly[0];
 	} else {
-		int half_n = n / 2;
+		long int half_n = n / 2;
 
 		// Filter the values in A into A_even and A_odd
-		filter( n, A );
+		filter( n, coeff_poly );
 
 		// Recursively compute the values at n/2 points
-		dcomp *V_even = evaluate( A, half_n, w * w );
-		dcomp *V_odd = evaluate((A + half_n), half_n, w * w );
+        dcomp* even_eval = eval_poly;
+        dcomp* odd_eval = ( eval_poly + half_n );
+		evaluate( coeff_poly, half_n, w * w, even_eval );
+		evaluate((coeff_poly + half_n), half_n, w * w, odd_eval );
 
 		// Now compute the values at n points
 		dcomp x = 1;
-		for( int j = 0; j <half_n ; ++j ) {
-			values[j] = V_even[j] + x * V_odd[j];
-			values[j + half_n] = V_even[j] - x * V_odd[j];
+        dcomp val_even, val_odd;
+        dcomp val1, val2;
+		for( long int j = 0; j <half_n ; ++j ) {
+            val_even = even_eval[j];
+            val_odd = x * odd_eval[j];
+			eval_poly[j] = val_even + val_odd;
+			eval_poly[j + half_n] = val_even - val_odd;
 			x = x * w;
 		}
-
-		// delete the values obtained
-		free( V_even );
-		free( V_odd );
 	}
 
 	// return the computed values
-	return values;
+    return eval_poly;
 }
 
 int main() {
-	int test_cases;
-	cin >> test_cases;
-
     // define the variables which will be required for computation
-    dcomp A[2000];
-    dcomp B[2000];
-    dcomp C_eval[2000];
-    dcomp *C, *A_eval, *B_eval;
+    clock_t t1, t2;
+    t1 = clock();
+	long int i, j, k, n, max_degree, upper_bound, test_cases;
     dcomp w;
-	int i, j, k, n, lim, points;
+    dcomp* pol1 = new dcomp[SIZE];
+    dcomp* pol2 = new dcomp[SIZE];
 
     // Loop through all the test cases
+	cin >> test_cases;
 	for( k = 0; k < test_cases; ++k ) {
 		cin >> n;
 
 		// allocate memory for the two polynomials with the given degree
-		points = pow2( 2 * n );
+		upper_bound= pow2( 2 * n );
 
 		// read the values
 		for (j = 0; j <= n; ++j ) {
-			cin >> A[j];
+			cin >> pol1[j];
 		}
 
 		for (j = 0; j <= n; ++j ) {
-			cin >> B[j];
+			cin >> pol2[j];
 		}
 
 		// Extend the two input arrays to points number of points
-		for ( ; j <points; ++j ) {
-			A[j] = 0;
-			B[j] = 0;
+		for ( ; j <= upper_bound; ++j ) {
+			pol1[j] = 0;
+			pol2[j] = 0;
 		}
 
 		// define omega
-		w = polar( 1.0f, ( float )( 2.0 * M_PI / points) );
-		w = dcomp( w.real(), w.imag() );
-		A_eval = evaluate( A, points, w );
-		B_eval = evaluate( B, points, w );
+		w = polar( 1.0, 2.0 * PI / upper_bound );
+		evaluate( pol1, upper_bound, w , pol1 );
+		evaluate( pol2, upper_bound, w , pol2 );
 
 		// Compute the values of C on these points
-		for( i = 0; i < points; i++ ) {
-			C_eval[i] = A_eval[i] * B_eval[i];
+		for( i = 0; i <= upper_bound; i++ ) {
+			pol2[i] = pol1[i] * pol2[i];
 		}
 
-        // They are of no use hereafter
-        free( A_eval );
-        free( B_eval );
-
-		C = evaluate( C_eval, points, dcomp( 1.0f, 0) / w );
+        // Now interpolate the polynomial
+		evaluate( pol2, upper_bound, dcomp( 1.0, 0) / w , pol1 );
 
         // Compute the limits
-		lim = 2 * n;
-		for( i = 0; i <= lim; i++ ){
-			printf( "%.0f ", C[i].real()/points );
+		max_degree = 2 * n;
+		for( i = 0; i <= max_degree; i++ ){
+            //printf("%.0lf ", pol1[i].real() / upper_bound);
 		}
-
-		free( C );
+        //cout << endl;
 	}
+
+    t2 = clock();
+    cout << (float)(t2-t1)/(test_cases * CLOCKS_PER_SEC) << endl;
+
 	return 0;
 }
