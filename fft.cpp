@@ -19,7 +19,7 @@
 #include<stdlib.h>
 #include<cmath>
 #include<time.h>
-#define SIZE 10000000
+#define SIZE 50000000
 
 using namespace std;
 
@@ -29,7 +29,7 @@ using namespace std;
 typedef complex<double> dcomp;
 
 // Global variables
-dcomp* filter_temp = new dcomp[SIZE];
+dcomp* filter_temp;
 
 long int pow2( long int n ){
 	if ( n == 0 ) {
@@ -100,14 +100,15 @@ dcomp* evaluate( dcomp* coeff_poly, long int n, dcomp w , dcomp* eval_poly ){
 int main() {
     // define the variables which will be required for computation
     clock_t t1, t2;
-    t1 = clock();
 	long int i, j, k, n, max_degree, upper_bound, test_cases;
     dcomp w;
     dcomp* pol1 = new dcomp[SIZE];
     dcomp* pol2 = new dcomp[SIZE];
+    filter_temp = new dcomp[SIZE];
 
     // Loop through all the test cases
 	cin >> test_cases;
+    t1 = clock();
 	for( k = 0; k < test_cases; ++k ) {
 		cin >> n;
 
@@ -145,9 +146,9 @@ int main() {
         // Compute the limits
 		max_degree = 2 * n;
 		for( i = 0; i <= max_degree; i++ ){
-            //printf("%.0lf ", pol1[i].real() / upper_bound);
+            // printf("%.0lf ", pol1[i].real() / upper_bound);
 		}
-        //cout << endl;
+        // cout << endl;
 	}
 
     t2 = clock();

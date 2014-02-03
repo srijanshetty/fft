@@ -15,15 +15,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include<iostream>
 #include<stdlib.h>
+#include<time.h>
+#define SIZE 10000
 
 using namespace std;
 
 int main() {
+    clock_t t1,t2;
     long int i, j, k, degree, result_degree, test_cases, temp;
-    long int A[2000], B[2000], C[2000];
+    long int* A = new long int[SIZE];
+    long int* B = new long int[SIZE];
+    long int* C = new long int[SIZE];
 
     // read the values
     cin >> test_cases;
+    t1 = clock();
     for( i = 0; i < test_cases; ++i) {
         cin >> degree;
         result_degree = 2 * degree;
@@ -53,9 +59,12 @@ int main() {
         }
 
         for( j = 0; j <= result_degree; ++j ) {
-            cout<< C[j] << " ";
+            // cout<< C[j] << " ";
         }
-        cout << endl;
+        // cout << endl;
     }
+
+    t2 = clock();
+    cout << (float)(t2-t1)/(test_cases * CLOCKS_PER_SEC) << endl;
     return 0;
 }
